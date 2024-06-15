@@ -18,16 +18,13 @@ def validate_jwt(f):
         if not token:
             return {"status": "Token is missing"}, 401
         # Bearer Token
-        print(token)
         token = token.split(" ")[1]
-        print(token)
         status, valid_token = verify_token(token)
         if not valid_token:
             return status, 401
 
         return f(*args, **kargs)
 
-    # decor.__name__ == f.__name__
     return decor
 
 
