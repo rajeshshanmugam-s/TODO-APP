@@ -4,17 +4,11 @@
 # Add JWT Middleware
 from flask import Flask, request
 import json
+
+from config import mongo_coll
+from data_models import Item, UpdateModel
+
 app = Flask(__name__)
-
-from pydantic import BaseModel
-from datetime import datetime
-
-
-class Item(BaseModel):
-    id: int
-    name: str
-    description: str
-    created_at: str
 
 
 @app.route("/test", methods=["GET"])
@@ -25,8 +19,48 @@ def test_endpoint():
 @app.route("/todo/insert", methods=["POST"])
 def add_todo():
     item = Item.model_validate(json.loads(request.data))
-    return item.model_dump()
+    res = mongo_coll.insert_one(item.model_dump())
+    if res.acknowledged:
+        return {"status": "Inserted successfully"}, 201
+    else:
+        return {"status": "DB Error"}, 500
+
+
+@app.route("/todo/list_all", methods=["GET"])
+def list_all_items():
+    res = mongo_coll.find({}, {"_id": False})
+    return list(res)
+
+
+@app.route("/todo/find/<item_id>", methods=["GET"])
+def retrieve_via_id(item_id):
+    res = mongo_coll.find_one({"item_id": int(item_id)}, {"_id": False})
+    if not res:
+        return {"status": f"Requested ID {item_id} not found"}, 404
+    return res
+
+
+@app.route("/todo/update/<item_id>", methods=["PUT"])
+def update_item(item_id):
+
+    update_value = UpdateModel.model_validate(json.loads(request.data))
+    update_value = {"$set": update_value.model_dump()}
+    filter_value = {"item_id": int(item_id)}
+
+    res = mongo_coll.update_one(filter_value, update_value)
+    if res.modified_count == 0:
+        return {"status": f"ID: {item_id} not Updated"}, 400
+
+    return {"status": f"ID: {item_id}  Updated successfully"}
+
+
+@app.route("/todo/delete/<item_id>", methods=["DELETE"])
+def delete_item(item_id):
+    res = mongo_coll.delete_one({"item_id": int(item_id)})
+    if not res:
+        return {"status": f"Requested ID {item_id} not found"}, 404
+    return {"status": f"Successfully deleted the ID {item_id}"}
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
