@@ -3,6 +3,11 @@ from datetime import datetime
 from typing import Optional
 
 
+class User(BaseModel):
+    username: str
+    password: str
+
+
 class Item(BaseModel):
     item_id: int  # Autoincrement it
     name: str

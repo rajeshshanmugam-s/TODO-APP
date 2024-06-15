@@ -5,10 +5,30 @@
 from flask import Flask, request
 import json
 
-from config import mongo_coll
-from data_models import Item, UpdateModel
+from config import mongo_coll_todo, mongo_coll_user
+from data_models import Item, UpdateModel, User
+from utils import generate_token, verify_token
 
 app = Flask(__name__)
+
+
+def validate_jwt(f):
+    def decor(*args, **kargs):
+        token = request.headers.get("Authorization")
+        if not token:
+            return {"status": "Token is missing"}, 401
+        # Bearer Token
+        print(token)
+        token = token.split(" ")[1]
+        print(token)
+        status, valid_token = verify_token(token)
+        if not valid_token:
+            return status, 401
+
+        return f(*args, **kargs)
+
+    # decor.__name__ == f.__name__
+    return decor
 
 
 @app.route("/test", methods=["GET"])
@@ -16,7 +36,32 @@ def test_endpoint():
     return "working"
 
 
-@app.route("/todo/insert", methods=["POST"])
+@app.route("/users/register", methods=["POST"])
+def register_user():
+    user = User.model_validate(json.loads(request.data))
+    users_list = mongo_coll_user.find({"username": user.username})
+
+    # FIXME: Encrypt the password before saving
+    if list(users_list) == []:
+        resp = mongo_coll_user.insert_one(user.model_dump())
+        return {"status": "User added successfully"}, 201
+    else:
+        return {"status": "Username already exists"}, 409
+
+
+@app.route("/users/login", methods=["GET"])
+def login_user():
+    user = User.model_validate(json.loads(request.data))
+    user_list = mongo_coll_user.find_one(user.model_dump())
+    if user_list:
+        token = generate_token(user.username)
+        return token
+    else:
+        return {"status": "Username or Password is Incorrect"}, 401
+
+
+@app.route("/todo/insert", methods=["POST"], endpoint="add_todo")
+@validate_jwt
 def add_todo():
     item = Item.model_validate(json.loads(request.data))
     res = mongo_coll_todo.insert_one(item.model_dump())
@@ -26,13 +71,15 @@ def add_todo():
         return {"status": "DB Error"}, 500
 
 
-@app.route("/todo/list_all", methods=["GET"])
+@app.route("/todo/list_all", methods=["GET"], endpoint="list_all_items")
+@validate_jwt
 def list_all_items():
     res = mongo_coll_todo.find({}, {"_id": False})
     return list(res)
 
 
-@app.route("/todo/find/<item_id>", methods=["GET"])
+@app.route("/todo/find/<item_id>", methods=["GET"], endpoint="retrieve_via_id")
+@validate_jwt
 def retrieve_via_id(item_id):
     res = mongo_coll_todo.find_one({"item_id": int(item_id)}, {"_id": False})
     if not res:
@@ -40,7 +87,8 @@ def retrieve_via_id(item_id):
     return res
 
 
-@app.route("/todo/update/<item_id>", methods=["PUT"])
+@app.route("/todo/update/<item_id>", methods=["PUT"], endpoint="update_item")
+@validate_jwt
 def update_item(item_id):
 
     update_value = UpdateModel.model_validate(json.loads(request.data))
@@ -54,7 +102,8 @@ def update_item(item_id):
     return {"status": f"ID: {item_id}  Updated successfully"}
 
 
-@app.route("/todo/delete/<item_id>", methods=["DELETE"])
+@app.route("/todo/delete/<item_id>", methods=["DELETE"], endpoint="delete_item")
+@validate_jwt
 def delete_item(item_id):
     res = mongo_coll_todo.delete_one({"item_id": int(item_id)})
     if not res:
