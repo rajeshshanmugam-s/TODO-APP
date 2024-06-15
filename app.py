@@ -19,7 +19,7 @@ def test_endpoint():
 @app.route("/todo/insert", methods=["POST"])
 def add_todo():
     item = Item.model_validate(json.loads(request.data))
-    res = mongo_coll.insert_one(item.model_dump())
+    res = mongo_coll_todo.insert_one(item.model_dump())
     if res.acknowledged:
         return {"status": "Inserted successfully"}, 201
     else:
@@ -28,13 +28,13 @@ def add_todo():
 
 @app.route("/todo/list_all", methods=["GET"])
 def list_all_items():
-    res = mongo_coll.find({}, {"_id": False})
+    res = mongo_coll_todo.find({}, {"_id": False})
     return list(res)
 
 
 @app.route("/todo/find/<item_id>", methods=["GET"])
 def retrieve_via_id(item_id):
-    res = mongo_coll.find_one({"item_id": int(item_id)}, {"_id": False})
+    res = mongo_coll_todo.find_one({"item_id": int(item_id)}, {"_id": False})
     if not res:
         return {"status": f"Requested ID {item_id} not found"}, 404
     return res
@@ -47,7 +47,7 @@ def update_item(item_id):
     update_value = {"$set": update_value.model_dump()}
     filter_value = {"item_id": int(item_id)}
 
-    res = mongo_coll.update_one(filter_value, update_value)
+    res = mongo_coll_todo.update_one(filter_value, update_value)
     if res.modified_count == 0:
         return {"status": f"ID: {item_id} not Updated"}, 400
 
@@ -56,7 +56,7 @@ def update_item(item_id):
 
 @app.route("/todo/delete/<item_id>", methods=["DELETE"])
 def delete_item(item_id):
-    res = mongo_coll.delete_one({"item_id": int(item_id)})
+    res = mongo_coll_todo.delete_one({"item_id": int(item_id)})
     if not res:
         return {"status": f"Requested ID {item_id} not found"}, 404
     return {"status": f"Successfully deleted the ID {item_id}"}
