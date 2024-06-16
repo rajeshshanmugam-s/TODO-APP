@@ -12,7 +12,7 @@ class Item(BaseModel):
     item_id: int  # Autoincrement it
     name: str
     description: str
-    created_at: str  # TODO: Change this to datetime type
+    created_at: datetime = None
 
 
 class UpdateModel(BaseModel):

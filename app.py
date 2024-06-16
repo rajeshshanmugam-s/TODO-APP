@@ -2,8 +2,9 @@
 # Create Mongo DB Connector
 # List of Endpoints 1. Insert, 2. Read, 3. Delete,
 # Add JWT Middleware
+
 from flask import Flask, request
-import json
+from datetime import datetime
 
 from config import mongo_coll_todo, mongo_coll_user
 from data_models import Item, UpdateModel, User
@@ -35,32 +36,37 @@ def test_endpoint():
 
 @app.route("/users/register", methods=["POST"])
 def register_user():
-    user = User.model_validate(json.loads(request.data))
+    user = User.model_validate(request.json)
     users_list = mongo_coll_user.find({"username": user.username})
 
     # FIXME: Encrypt the password before saving
     if list(users_list) == []:
         resp = mongo_coll_user.insert_one(user.model_dump())
-        return {"status": "User added successfully"}, 201
-    else:
-        return {"status": "Username already exists"}, 409
+        if resp.acknowledged:
+            return {"status": "User added successfully"}, 201
+        else:
+            return {"status": "Unable to add User"}, 500
+
+    return {"status": "Username already exists"}, 409
 
 
 @app.route("/users/login", methods=["GET"])
 def login_user():
-    user = User.model_validate(json.loads(request.data))
+    user = User.model_validate(request.json)
     user_list = mongo_coll_user.find_one(user.model_dump())
     if user_list:
         token = generate_token(user.username)
-        return token
+        return {"token": token}
     else:
-        return {"status": "Username or Password is Incorrect"}, 401
+        return {"status": "Invalid Username or Password"}, 401
 
 
 @app.route("/todo/insert", methods=["POST"], endpoint="add_todo")
 @validate_jwt
 def add_todo():
-    item = Item.model_validate(json.loads(request.data))
+    request_data = request.json
+    request_data["created_at"] = datetime.now()  # TODO: If required, add Timezone
+    item = Item(**request_data)
     res = mongo_coll_todo.insert_one(item.model_dump())
     if res.acknowledged:
         return {"status": "Inserted successfully"}, 201
@@ -88,7 +94,7 @@ def retrieve_via_id(item_id):
 @validate_jwt
 def update_item(item_id):
 
-    update_value = UpdateModel.model_validate(json.loads(request.data))
+    update_value = UpdateModel.model_validate(request.json)
     update_value = {"$set": update_value.model_dump()}
     filter_value = {"item_id": int(item_id)}
 
