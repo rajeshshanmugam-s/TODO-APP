@@ -5,6 +5,7 @@
 
 from flask import Flask, request
 from datetime import datetime
+from uuid import uuid4
 
 from config import mongo_coll_todo, mongo_coll_user
 from data_models import Item, UpdateModel, User
@@ -66,7 +67,12 @@ def login_user():
 def add_todo():
     request_data = request.json
     request_data["created_at"] = datetime.now()  # TODO: If required, add Timezone
+
+    # Since auto increment is not available in Mongo, uuid is used
+    request_data["item_id"] = uuid4()
     item = Item(**request_data)
+
+    # Assumption: Duplication of tasks are allowed, so checking for existing value is not required.
     res = mongo_coll_todo.insert_one(item.model_dump())
     if res.acknowledged:
         return {"status": "Inserted successfully"}, 201

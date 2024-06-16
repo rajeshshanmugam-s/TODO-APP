@@ -9,7 +9,7 @@ class User(BaseModel):
 
 
 class Item(BaseModel):
-    item_id: int  # Autoincrement it
+    item_id: int = None
     name: str
     description: str
     created_at: datetime = None
