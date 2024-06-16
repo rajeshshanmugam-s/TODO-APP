@@ -87,7 +87,7 @@ def list_all_items():
 @app.route("/todo/find/<item_id>", methods=["GET"], endpoint="retrieve_via_id")
 @validate_jwt
 def retrieve_via_id(item_id):
-    res = mongo_coll_todo.find_one({"item_id": int(item_id)}, {"_id": False})
+    res = mongo_coll_todo.find_one({"item_id": item_id}, {"_id": False})
     if not res:
         return {"status": f"Requested ID {item_id} not found"}, 404
     return res
@@ -99,7 +99,7 @@ def update_item(item_id):
 
     update_value = UpdateModel.model_validate(request.json)
     update_value = {"$set": update_value.model_dump()}
-    filter_value = {"item_id": int(item_id)}
+    filter_value = {"item_id": item_id}
 
     res = mongo_coll_todo.update_one(filter_value, update_value)
     if res.modified_count == 0:
@@ -111,7 +111,7 @@ def update_item(item_id):
 @app.route("/todo/delete/<item_id>", methods=["DELETE"], endpoint="delete_item")
 @validate_jwt
 def delete_item(item_id):
-    res = mongo_coll_todo.delete_one({"item_id": int(item_id)})
+    res = mongo_coll_todo.delete_one({"item_id": item_id})
     if not res:
         return {"status": f"Requested ID {item_id} not found"}, 404
     return {"status": f"Successfully deleted the ID {item_id}"}
