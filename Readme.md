@@ -20,6 +20,10 @@ MONGO_PW="12345"
 
 ### Run the APP: `python main.py` 
 
+### Postman Collections: 
+Download and Import it to Postman
+[Collections](TODO%20APP.postman_collection.json)
+
 ### Note: 
 - Use env if required. 
 - Update port and Host in main.py if required. 

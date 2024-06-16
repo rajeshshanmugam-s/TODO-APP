@@ -1,0 +1,198 @@
+{
+	"info": {
+		"_postman_id": "fd1ef190-f9cf-40b2-9c65-c88cc7f9d80f",
+		"name": "TODO APP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23686570"
+	},
+	"item": [
+		{
+			"name": "User registration",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"Robert\",\r\n    \"password\": \"12345\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "127.0.0.1:5000/users/register",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User Login",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "inherit"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"Robert\",\r\n    \"password\": \"12345\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "127.0.0.1:5000/users/login",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Insert Todo",
+			"request": {
+				"auth": {
+					"type": "bearer"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Complete task 2\",\r\n    \"description\": \"Task 2 is a sub task of Project 1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "127.0.0.1:5000/todo/insert",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"todo",
+						"insert"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List all Todo",
+			"request": {
+				"auth": {
+					"type": "inherit"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "127.0.0.1:5000/todo/list_all",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"todo",
+						"list_all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Todo",
+			"request": {
+				"auth": {
+					"type": "inherit"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"name\": \"Rajesh\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "127.0.0.1:5000/todo/update/8c70ba93-4a75-4533-b4ca-f01cc906d969",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"todo",
+						"update",
+						"8c70ba93-4a75-4533-b4ca-f01cc906d969"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete TODO",
+			"request": {
+				"auth": {
+					"type": "inherit"
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "127.0.0.1:5000/todo/delete/8c70ba93-4a75-4533-b4ca-f01cc906d969",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"todo",
+						"delete",
+						"8c70ba93-4a75-4533-b4ca-f01cc906d969"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
