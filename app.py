@@ -66,14 +66,11 @@ def login_user():
 @validate_jwt
 def add_todo():
     request_data = request.json
-    request_data["created_at"] = datetime.now()  # TODO: If required, add Timezone
-
-    # Since auto increment is not available in Mongo, uuid is used
-    request_data["item_id"] = uuid4()
     item = Item(**request_data)
-
+    item_dict = item.model_dump()
+    item_dict["item_id"] = str(item_dict["item_id"])
     # Assumption: Duplication of tasks are allowed, so checking for existing value is not required.
-    res = mongo_coll_todo.insert_one(item.model_dump())
+    res = mongo_coll_todo.insert_one(item_dict)
     if res.acknowledged:
         return {"status": "Inserted successfully"}, 201
     else:
